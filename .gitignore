@@ -1,0 +1,20 @@
+# Node
+node_modules/
+dist/
+.DS_Store
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Environment secrets
+.env
+
+# ML artifacts (optional - can keep model.pkl if you want)
+backend/ml/data/*.xlsx
+backend/ml/data/*.csv
+!backend/ml/data/transactions.csv
+
+# Editor
+.vscode/
