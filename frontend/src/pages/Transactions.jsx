@@ -2,6 +2,7 @@ import { useState } from "react";
 import TransactionList from "../components/TransactionList";
 import TransactionModal from "../components/TransactionModal";
 import { CATEGORIES } from "../utils/categorize";
+import { createTransaction, updateTransaction, deleteTransaction } from "../utils/api";
 
 function Transactions({ transactions, setTransactions }) {
   const [filter, setFilter] = useState("All");
@@ -11,11 +12,13 @@ function Transactions({ transactions, setTransactions }) {
   const categories = ["All", ...CATEGORIES.filter(c => transactions.some(t => t.category === c))];
   const filtered = filter === "All" ? transactions : transactions.filter(t => t.category === filter);
 
-  const handleSave = (transaction) => {
+  const handleSave = async (transaction) => {
     if (editingTransaction) {
-      setTransactions(transactions.map(t => t.id === transaction.id ? transaction : t));
+      const updated = await updateTransaction(editingTransaction.id, transaction);
+      setTransactions(transactions.map(t => t.id === updated.id ? updated : t));
     } else {
-      setTransactions([transaction, ...transactions]);
+      const created = await createTransaction(transaction);
+      setTransactions([created, ...transactions]);
     }
     setEditingTransaction(null);
   };
@@ -25,7 +28,8 @@ function Transactions({ transactions, setTransactions }) {
     setModalOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
+    await deleteTransaction(id);
     setTransactions(transactions.filter(t => t.id !== id));
   };
 

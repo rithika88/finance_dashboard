@@ -4,6 +4,7 @@ import TransactionList from "../components/TransactionList";
 import TransactionModal from "../components/TransactionModal";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { CATEGORY_COLORS } from "../utils/categorize";
+import { createTransaction, updateTransaction, deleteTransaction } from "../utils/api";
 
 function Dashboard({ transactions, setTransactions }) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -20,11 +21,13 @@ function Dashboard({ transactions, setTransactions }) {
   const pieData = Object.entries(categoryTotals).map(([name, value]) => ({ name, value }));
   const barData = [{ name: "Income", amount: income }, { name: "Expenses", amount: Math.abs(expenses) }];
 
-  const handleSave = (transaction) => {
+  const handleSave = async (transaction) => {
     if (editingTransaction) {
-      setTransactions(transactions.map(t => t.id === transaction.id ? transaction : t));
+      const updated = await updateTransaction(editingTransaction.id, transaction);
+      setTransactions(transactions.map(t => t.id === updated.id ? updated : t));
     } else {
-      setTransactions([transaction, ...transactions]);
+      const created = await createTransaction(transaction);
+      setTransactions([created, ...transactions]);
     }
     setEditingTransaction(null);
   };
@@ -34,7 +37,8 @@ function Dashboard({ transactions, setTransactions }) {
     setModalOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
+    await deleteTransaction(id);
     setTransactions(transactions.filter(t => t.id !== id));
   };
 

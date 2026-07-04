@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: "▦" },
@@ -6,7 +6,16 @@ const navItems = [
   { to: "/analytics", label: "Analytics", icon: "◎" },
 ];
 
-function Sidebar() {
+function Sidebar({ user, setUser }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/login");
+  };
+
   return (
     <div className="w-60 bg-white border-r border-slate-100 h-screen fixed flex flex-col py-6">
       <div className="px-6 pb-8 flex items-center gap-2.5">
@@ -31,6 +40,16 @@ function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      <div className="px-3 border-t border-slate-100 pt-4">
+        <div className="px-3.5 mb-2">
+          <p className="text-sm font-medium text-slate-900 truncate">{user?.name}</p>
+          <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+        </div>
+        <button onClick={handleLogout} className="w-full text-left px-3.5 py-2 rounded-lg text-sm text-slate-500 hover:bg-slate-50">
+          ⎋ Log out
+        </button>
+      </div>
     </div>
   );
 }
