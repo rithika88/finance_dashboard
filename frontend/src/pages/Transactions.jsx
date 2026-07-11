@@ -37,12 +37,12 @@ function Transactions({ transactions, setTransactions }) {
     <div>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900">Transactions</h1>
-          <p className="text-sm text-slate-400 mt-1">All your income and expenses</p>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
+          <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">All your income and expenses</p>
         </div>
         <button
           onClick={() => { setEditingTransaction(null); setModalOpen(true); }}
-          className="bg-violet-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-violet-700 whitespace-nowrap self-start sm:self-auto"
+          className="bg-slate-800 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-700 whitespace-nowrap self-start sm:self-auto"
         >
           + Add Transaction
         </button>
@@ -54,7 +54,9 @@ function Transactions({ transactions, setTransactions }) {
             key={cat}
             onClick={() => setFilter(cat)}
             className={`px-4 py-1.5 rounded-full text-sm border transition-colors ${
-              filter === cat ? "bg-violet-600 text-white border-violet-600 font-semibold" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+              filter === cat
+                ? "bg-slate-800 text-white border-slate-800 font-semibold"
+                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
             }`}
           >
             {cat}
@@ -62,9 +64,9 @@ function Transactions({ transactions, setTransactions }) {
         ))}
       </div>
 
-      <p className="text-sm text-slate-400 mb-4">Showing {filtered.length} of {transactions.length} transactions</p>
+      <p className="text-sm text-slate-400 dark:text-slate-500 mb-4">Showing {filtered.length} of {transactions.length} transactions</p>
 
-      <div className="bg-white rounded-2xl p-6 border border-slate-100">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800">
         <TransactionList transactions={filtered} onEdit={handleEdit} onDelete={handleDelete} />
       </div>
 

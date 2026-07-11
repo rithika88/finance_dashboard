@@ -15,6 +15,16 @@ function App() {
   });
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("darkMode") === "true");
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("darkMode", darkMode);
+  }, [darkMode]);
 
   useEffect(() => {
     if (!user) {
@@ -38,14 +48,14 @@ function App() {
             !user ? (
               <Navigate to="/login" />
             ) : (
-              <div className="flex bg-slate-50 min-h-screen">
-                <Sidebar user={user} setUser={setUser} />
-                <div className="ml-60 flex-1 p-5 md:p-8 min-w-0">
+              <div className="flex bg-slate-50 dark:bg-slate-950 min-h-screen transition-colors">
+                <Sidebar user={user} setUser={setUser} darkMode={darkMode} setDarkMode={setDarkMode} />
+                <div className="md:ml-60 flex-1 p-4 pt-20 md:p-8 min-w-0">
                   {loading ? (
                     <p className="text-slate-400 text-sm">Loading...</p>
                   ) : (
                     <Routes>
-                      <Route path="/" element={<Dashboard transactions={transactions} setTransactions={setTransactions} />} />
+                      <Route path="/" element={<Dashboard transactions={transactions} setTransactions={setTransactions} user={user} />} />
                       <Route path="/transactions" element={<Transactions transactions={transactions} setTransactions={setTransactions} />} />
                       <Route path="/analytics" element={<Analytics transactions={transactions} />} />
                     </Routes>

@@ -18,3 +18,9 @@ export const updateTransaction = (id, transaction) =>
 
 export const deleteTransaction = (id) =>
   axios.delete(`${API_URL}/transactions/${id}`, authHeader());
+
+export const getInsights = () =>
+  axios.get(`${API_URL}/insights`, authHeader()).then(res => res.data);
+
+export const getAnalyticsInsights = () =>
+  axios.get(`${API_URL}/insights/analytics`, authHeader()).then(res => res.data);
