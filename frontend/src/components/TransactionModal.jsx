@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Sparkles } from "lucide-react";
 import { CATEGORIES } from "../utils/categorize";
+import { categorizeDescription, submitFeedback } from "../utils/api";
 
 function TransactionModal({ isOpen, onClose, onSave, editingTransaction }) {
   const [type, setType] = useState("expense");
@@ -7,6 +9,8 @@ function TransactionModal({ isOpen, onClose, onSave, editingTransaction }) {
   const [category, setCategory] = useState("Food");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [suggested, setSuggested] = useState(null);
+  const debounceRef = useRef(null);
 
   useEffect(() => {
     if (editingTransaction) {
@@ -22,15 +26,44 @@ function TransactionModal({ isOpen, onClose, onSave, editingTransaction }) {
       setDescription("");
       setDate(new Date().toISOString().slice(0, 10));
     }
+    setSuggested(null);
   }, [editingTransaction, isOpen]);
 
+  useEffect(() => {
+    if (!description || description.trim().length < 3 || type === "income") {
+      setSuggested(null);
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      categorizeDescription(description)
+        .then(data => {
+          if (data.category && CATEGORIES.includes(data.category)) {
+            setSuggested(data.category);
+          }
+        })
+        .catch(() => {});
+    }, 500);
+    return () => clearTimeout(debounceRef.current);
+  }, [description, type]);
+
   if (!isOpen) return null;
+
+  const applySuggestion = () => {
+    setCategory(suggested);
+    setSuggested(null);
+  };
 
   const handleSave = () => {
     if (!amount || !description) {
       alert("Please fill in amount and description!");
       return;
     }
+
+    if (type === "expense") {
+      submitFeedback(description, category).catch(() => {});
+    }
+
     onSave({
       id: editingTransaction?.id || Date.now(),
       amount: type === "expense" ? -Math.abs(Number(amount)) : Math.abs(Number(amount)),
@@ -76,17 +109,6 @@ function TransactionModal({ isOpen, onClose, onSave, editingTransaction }) {
         </div>
 
         <div className="mb-4">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1.5">Category</label>
-          <select
-            value={category}
-            onChange={e => setCategory(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
-          >
-            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-
-        <div className="mb-4">
           <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1.5">Description</label>
           <input
             type="text"
@@ -95,6 +117,27 @@ function TransactionModal({ isOpen, onClose, onSave, editingTransaction }) {
             placeholder="e.g. Coffee at Starbucks"
             className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
           />
+        </div>
+
+        <div className="mb-4">
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1.5">Category</label>
+          <select
+            value={category}
+            onChange={e => setCategory(e.target.value)}
+            className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
+          >
+            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+
+          {suggested && suggested !== category && (
+            <button
+              onClick={applySuggestion}
+              className="mt-2 flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg"
+            >
+              <Sparkles size={12} />
+              AI suggests: <span className="font-semibold">{suggested}</span> — click to apply
+            </button>
+          )}
         </div>
 
         <div className="mb-6">
@@ -111,7 +154,7 @@ function TransactionModal({ isOpen, onClose, onSave, editingTransaction }) {
           <button onClick={onClose} className="flex-1 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800">
             Cancel
           </button>
-          <button onClick={handleSave} className="flex-1 py-2.5 rounded-lg bg-slate-800 text-white text-sm font-semibold hover:bg-slate-700">
+          <button onClick={handleSave} className="flex-1 py-2.5 rounded-lg bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 text-sm font-semibold hover:bg-slate-700 dark:hover:bg-white">
             Save
           </button>
         </div>

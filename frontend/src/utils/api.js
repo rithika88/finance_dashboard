@@ -24,3 +24,9 @@ export const getInsights = () =>
 
 export const getAnalyticsInsights = () =>
   axios.get(`${API_URL}/insights/analytics`, authHeader()).then(res => res.data);
+
+export const categorizeDescription = (description) =>
+  axios.post(`${API_URL}/categorize`, { description }).then(res => res.data);
+
+export const submitFeedback = (description, category) =>
+  axios.post(`${API_URL}/feedback`, { description, category }, authHeader());

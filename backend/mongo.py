@@ -9,3 +9,4 @@ client = MongoClient(MONGO_URI)
 db = client["finance_dashboard"]
 transactions_collection = db["transactions"]
 users_collection = db["users"]
+feedback_collection = db["ml_feedback"]

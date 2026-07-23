@@ -19,7 +19,9 @@ function Dashboard({ transactions, setTransactions, user }) {
   const total = filtered.reduce((sum, t) => sum + t.amount, 0);
   const income = filtered.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
   const expenses = filtered.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0);
-  const expensePct = income > 0 ? Math.min(Math.round((Math.abs(expenses) / income) * 100), 100) : 0;
+  const rawExpensePct = income > 0 ? (Math.abs(expenses) / income) * 100 : 0;
+  const expensePct = Math.min(rawExpensePct, 100);
+  const expensePctDisplay = rawExpensePct > 0 && rawExpensePct < 1 ? "<1" : Math.round(rawExpensePct);
 
   const categoryTotals = filtered.filter(t => t.amount < 0).reduce((acc, t) => {
     acc[t.category] = (acc[t.category] || 0) + Math.abs(t.amount);
@@ -90,13 +92,13 @@ function Dashboard({ transactions, setTransactions, user }) {
 
             <div className="flex justify-between items-baseline mb-2">
               <span className="text-sm text-slate-500 dark:text-slate-400">Spent this period</span>
-              <span className="text-2xl font-bold text-slate-900 dark:text-white">{expensePct}%</span>
+              <span className="text-2xl font-bold text-slate-900 dark:text-white">{expensePctDisplay}%</span>
             </div>
             <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-6">
               <div
                 className="h-full rounded-full transition-all"
                 style={{
-                  width: `${expensePct}%`,
+                  width: `${expensePctDisplay}%`,
                   background: expensePct > 90 ? "#c68787" : expensePct > 70 ? "#cbab7d" : "#8fae8a"
                 }}
               />
