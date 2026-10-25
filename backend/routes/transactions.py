@@ -36,11 +36,16 @@ def create_transaction(transaction: Transaction, user_id: str = Depends(get_curr
 
 @router.put("/transactions/{transaction_id}")
 def update_transaction(transaction_id: str, transaction: Transaction, user_id: str = Depends(get_current_user)):
+    from fastapi import HTTPException
     transactions_collection.update_one(
         {"_id": ObjectId(transaction_id), "user_id": user_id},
         {"$set": transaction.model_dump()}
     )
-    updated = transactions_collection.find_one({"_id": ObjectId(transaction_id)})
+    updated = transactions_collection.find_one(
+        {"_id": ObjectId(transaction_id), "user_id": user_id}
+    )
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Transaction not found")
     return serialize(updated)
 
 @router.delete("/transactions/{transaction_id}")
