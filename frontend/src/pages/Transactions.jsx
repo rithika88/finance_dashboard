@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import TransactionList from "../components/TransactionList";
 import TransactionModal from "../components/TransactionModal";
 import { CATEGORIES } from "../utils/categorize";
@@ -37,36 +38,39 @@ function Transactions({ transactions, setTransactions }) {
     <div>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
-          <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">All your income and expenses</p>
+          <h1 className="text-xl md:text-2xl font-display font-semibold" style={{ color: "var(--ink)" }}>Transactions</h1>
+          <p className="text-sm mt-1" style={{ color: "var(--ink-faint)" }}>All your income and expenses</p>
         </div>
-        <button
+        <motion.button
+          whileTap={{ scale: 0.96 }}
           onClick={() => { setEditingTransaction(null); setModalOpen(true); }}
-          className="bg-slate-800 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-700 whitespace-nowrap self-start sm:self-auto"
+          className="btn-brass px-5 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap self-start sm:self-auto"
         >
           + Add Transaction
-        </button>
+        </motion.button>
       </div>
 
       <div className="flex gap-2 mb-5 flex-wrap">
-        {categories.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setFilter(cat)}
-            className={`px-4 py-1.5 rounded-full text-sm border transition-colors ${
-              filter === cat
-                ? "bg-slate-800 text-white border-slate-800 font-semibold"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
+        {categories.map(cat => {
+          const active = filter === cat;
+          return (
+            <button
+              key={cat}
+              onClick={() => setFilter(cat)}
+              className="px-4 py-1.5 rounded-full text-sm border transition-colors"
+              style={active
+                ? { background: "var(--ink)", color: "var(--paper)", borderColor: "var(--ink)", fontWeight: 600 }
+                : { background: "var(--paper-surface)", color: "var(--ink-soft)", borderColor: "var(--hairline)" }}
+            >
+              {cat}
+            </button>
+          );
+        })}
       </div>
 
-      <p className="text-sm text-slate-400 dark:text-slate-500 mb-4">Showing {filtered.length} of {transactions.length} transactions</p>
+      <p className="text-sm mb-4" style={{ color: "var(--ink-faint)" }}>Showing {filtered.length} of {transactions.length} transactions</p>
 
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800">
+      <div className="surface p-6">
         <TransactionList transactions={filtered} onEdit={handleEdit} onDelete={handleDelete} />
       </div>
 

@@ -28,7 +28,7 @@ def get_transactions(user_id: str = Depends(get_current_user)):
 
 @router.post("/transactions")
 def create_transaction(transaction: Transaction, user_id: str = Depends(get_current_user)):
-    data = transaction.dict()
+    data = transaction.model_dump()
     data["user_id"] = user_id
     result = transactions_collection.insert_one(data)
     new_transaction = transactions_collection.find_one({"_id": result.inserted_id})
@@ -38,7 +38,7 @@ def create_transaction(transaction: Transaction, user_id: str = Depends(get_curr
 def update_transaction(transaction_id: str, transaction: Transaction, user_id: str = Depends(get_current_user)):
     transactions_collection.update_one(
         {"_id": ObjectId(transaction_id), "user_id": user_id},
-        {"$set": transaction.dict()}
+        {"$set": transaction.model_dump()}
     )
     updated = transactions_collection.find_one({"_id": ObjectId(transaction_id)})
     return serialize(updated)

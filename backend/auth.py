@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SECRET_KEY = os.environ.get("JWT_SECRET", "change-this-secret-key-later")
+SECRET_KEY = os.environ.get("JWT_SECRET")
+if not SECRET_KEY:
+    raise RuntimeError("JWT_SECRET environment variable is not set. Set it in your .env file.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 

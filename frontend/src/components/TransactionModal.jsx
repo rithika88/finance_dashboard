@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, X } from "lucide-react";
 import { CATEGORIES } from "../utils/categorize";
 import { categorizeDescription, submitFeedback } from "../utils/api";
 
@@ -10,6 +11,7 @@ function TransactionModal({ isOpen, onClose, onSave, editingTransaction }) {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [suggested, setSuggested] = useState(null);
+  const [shake, setShake] = useState(false);
   const debounceRef = useRef(null);
 
   useEffect(() => {
@@ -47,8 +49,6 @@ function TransactionModal({ isOpen, onClose, onSave, editingTransaction }) {
     return () => clearTimeout(debounceRef.current);
   }, [description, type]);
 
-  if (!isOpen) return null;
-
   const applySuggestion = () => {
     setCategory(suggested);
     setSuggested(null);
@@ -56,7 +56,8 @@ function TransactionModal({ isOpen, onClose, onSave, editingTransaction }) {
 
   const handleSave = () => {
     if (!amount || !description) {
-      alert("Please fill in amount and description!");
+      setShake(true);
+      setTimeout(() => setShake(false), 400);
       return;
     }
 
@@ -75,91 +76,133 @@ function TransactionModal({ isOpen, onClose, onSave, editingTransaction }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-7 w-full max-w-md" onClick={e => e.stopPropagation()}>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">{editingTransaction ? "Edit Transaction" : "New Transaction"}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl leading-none">×</button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 mb-5">
-          <button
-            onClick={() => setType("expense")}
-            className={`py-2.5 rounded-lg font-medium text-sm transition-colors ${type === "expense" ? "bg-red-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 flex items-center justify-center z-50 p-4"
+          style={{ background: "rgba(20, 20, 15, 0.45)", backdropFilter: "blur(2px)" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+        >
+          <motion.div
+            className="surface p-7 w-full max-w-md"
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0, x: shake ? [0, -6, 6, -4, 4, 0] : 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 6 }}
+            transition={{ type: "spring", stiffness: 340, damping: 28 }}
+            onClick={e => e.stopPropagation()}
           >
-            Expense
-          </button>
-          <button
-            onClick={() => setType("income")}
-            className={`py-2.5 rounded-lg font-medium text-sm transition-colors ${type === "income" ? "bg-green-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}
-          >
-            Income
-          </button>
-        </div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-display font-semibold" style={{ color: "var(--ink)" }}>
+                {editingTransaction ? "Edit Transaction" : "New Transaction"}
+              </h2>
+              <button onClick={onClose} className="icon-btn-hover p-1 rounded-md" style={{ color: "var(--ink-faint)" }}>
+                <X size={18} />
+              </button>
+            </div>
 
-        <div className="mb-4">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1.5">Amount</label>
-          <input
-            type="number"
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
-            placeholder="0"
-            className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
-          />
-        </div>
+            <div className="grid grid-cols-2 gap-2 mb-5">
+              <button
+                onClick={() => setType("expense")}
+                className="py-2.5 rounded-lg font-medium text-sm transition-colors"
+                style={type === "expense"
+                  ? { background: "var(--rust)", color: "#fff" }
+                  : { background: "var(--brass-tint)", color: "var(--ink-soft)" }}
+              >
+                Expense
+              </button>
+              <button
+                onClick={() => setType("income")}
+                className="py-2.5 rounded-lg font-medium text-sm transition-colors"
+                style={type === "income"
+                  ? { background: "var(--forest)", color: "#fff" }
+                  : { background: "var(--brass-tint)", color: "var(--ink-soft)" }}
+              >
+                Income
+              </button>
+            </div>
 
-        <div className="mb-4">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1.5">Description</label>
-          <input
-            type="text"
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            placeholder="e.g. Coffee at Starbucks"
-            className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
-          />
-        </div>
+            <div className="mb-4">
+              <label className="text-sm font-medium block mb-1.5" style={{ color: "var(--ink-soft)" }}>Amount</label>
+              <input
+                type="number"
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                placeholder="0"
+                className="field"
+              />
+            </div>
 
-        <div className="mb-4">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1.5">Category</label>
-          <select
-            value={category}
-            onChange={e => setCategory(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
-          >
-            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+            <div className="mb-4">
+              <label className="text-sm font-medium block mb-1.5" style={{ color: "var(--ink-soft)" }}>Description</label>
+              <input
+                type="text"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                placeholder="e.g. Coffee at Starbucks"
+                className="field"
+              />
+            </div>
 
-          {suggested && suggested !== category && (
-            <button
-              onClick={applySuggestion}
-              className="mt-2 flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg"
-            >
-              <Sparkles size={12} />
-              AI suggests: <span className="font-semibold">{suggested}</span> — click to apply
-            </button>
-          )}
-        </div>
+            <div className="mb-4">
+              <label className="text-sm font-medium block mb-1.5" style={{ color: "var(--ink-soft)" }}>Category</label>
+              <select
+                value={category}
+                onChange={e => setCategory(e.target.value)}
+                className="field"
+              >
+                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
 
-        <div className="mb-6">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1.5">Date</label>
-          <input
-            type="date"
-            value={date}
-            onChange={e => setDate(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
-          />
-        </div>
+              <AnimatePresence>
+                {suggested && suggested !== category && (
+                  <motion.button
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    onClick={applySuggestion}
+                    className="mt-2 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg"
+                    style={{ background: "var(--brass-tint)", color: "var(--brass-strong)" }}
+                  >
+                    <Sparkles size={12} />
+                    AI suggests: <span className="font-semibold">{suggested}</span> — click to apply
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
 
-        <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800">
-            Cancel
-          </button>
-          <button onClick={handleSave} className="flex-1 py-2.5 rounded-lg bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 text-sm font-semibold hover:bg-slate-700 dark:hover:bg-white">
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
+            <div className="mb-6">
+              <label className="text-sm font-medium block mb-1.5" style={{ color: "var(--ink-soft)" }}>Date</label>
+              <input
+                type="date"
+                value={date}
+                onChange={e => setDate(e.target.value)}
+                className="field"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={onClose}
+                className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                style={{ border: "1px solid var(--hairline)", color: "var(--ink-soft)" }}
+              >
+                Cancel
+              </button>
+              <motion.button
+                onClick={handleSave}
+                whileTap={{ scale: 0.97 }}
+                className="btn-brass flex-1 py-2.5 rounded-lg text-sm font-semibold"
+              >
+                Save
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 

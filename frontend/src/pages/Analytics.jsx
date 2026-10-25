@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { Package } from "lucide-react";
 import { CATEGORY_COLORS, CATEGORY_ICON_COMPONENTS } from "../utils/categorize";
 import AnalyticsInsights from "../components/AnalyticsInsights";
@@ -7,7 +8,7 @@ import {
   AreaChart, Area, CartesianGrid, Legend
 } from "recharts";
 
-const tooltipStyle = { background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#fff", fontSize: 12 };
+const tooltipStyle = { background: "var(--ink)", border: "none", borderRadius: 8, color: "var(--paper)", fontSize: 12 };
 
 function Analytics({ transactions }) {
   const expenses = transactions.filter(t => t.amount < 0).reduce((s, t) => s + t.amount, 0);
@@ -60,8 +61,8 @@ function Analytics({ transactions }) {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">Analytics</h1>
-        <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Deeper insights into your spending</p>
+        <h1 className="text-xl md:text-2xl font-display font-semibold" style={{ color: "var(--ink)" }}>Analytics</h1>
+        <p className="text-sm mt-1" style={{ color: "var(--ink-faint)" }}>Deeper insights into your spending</p>
       </div>
 
       <AnalyticsInsights />
@@ -75,100 +76,120 @@ function Analytics({ transactions }) {
           { label: "Largest Expense", value: `₹${largestExpense.toLocaleString()}` },
           { label: "Categories", value: `${pieData.length} types` },
         ].map((item, i) => (
-          <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800">
-            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mb-2">{item.label}</p>
-            <p className="text-lg md:text-xl font-bold text-slate-900 dark:text-white">{item.value}</p>
-          </div>
+          <motion.div
+            key={item.label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: i * 0.06 }}
+            className="surface p-5"
+          >
+            <p className="text-xs md:text-sm mb-2" style={{ color: "var(--ink-soft)" }}>{item.label}</p>
+            <p className="text-lg md:text-xl font-display font-semibold tabular" style={{ color: "var(--ink)" }}>{item.value}</p>
+          </motion.div>
         ))}
       </div>
 
       {/* Monthly Trend */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 mb-6 min-w-0">
-        <p className="font-semibold text-slate-900 dark:text-white mb-1">Monthly Trend</p>
-        <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">Income vs expenses over the last 6 months</p>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="surface p-6 mb-6 min-w-0"
+      >
+        <p className="font-semibold mb-1" style={{ color: "var(--ink)" }}>Monthly Trend</p>
+        <p className="text-xs mb-4" style={{ color: "var(--ink-faint)" }}>Income vs expenses over the last 6 months</p>
         <ResponsiveContainer width="100%" height={240}>
           <AreaChart data={monthlyData}>
             <defs>
               <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8fae8a" stopOpacity={0.4} />
-                <stop offset="95%" stopColor="#8fae8a" stopOpacity={0} />
+                <stop offset="5%" stopColor="#3C6E56" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="#3C6E56" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#c68787" stopOpacity={0.4} />
-                <stop offset="95%" stopColor="#c68787" stopOpacity={0} />
+                <stop offset="5%" stopColor="#B5533C" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="#B5533C" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.3} />
-            <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--hairline)" opacity={0.6} />
+            <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: "var(--ink-faint)", fontSize: 12 }} />
             <YAxis hide />
-            <Tooltip formatter={(v) => `₹${v.toLocaleString()}`} contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} />
+            <Tooltip formatter={(v) => `₹${v.toLocaleString()}`} contentStyle={tooltipStyle} labelStyle={{ color: "var(--paper)" }} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Area type="monotone" dataKey="income" stroke="#8fae8a" fill="url(#incomeGrad)" strokeWidth={2} name="Income" />
-            <Area type="monotone" dataKey="expenses" stroke="#c68787" fill="url(#expenseGrad)" strokeWidth={2} name="Expenses" />
+            <Area type="monotone" dataKey="income" stroke="#3C6E56" fill="url(#incomeGrad)" strokeWidth={2} name="Income" animationDuration={800} />
+            <Area type="monotone" dataKey="expenses" stroke="#B5533C" fill="url(#expenseGrad)" strokeWidth={2} name="Expenses" animationDuration={800} />
           </AreaChart>
         </ResponsiveContainer>
-      </div>
+      </motion.div>
 
       {/* Category comparison across months */}
       {last3Months.length > 1 && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 mb-6 min-w-0">
-          <p className="font-semibold text-slate-900 dark:text-white mb-1">Category Comparison</p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">Top categories over the last {last3Months.length} months</p>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="surface p-6 mb-6 min-w-0"
+        >
+          <p className="font-semibold mb-1" style={{ color: "var(--ink)" }}>Category Comparison</p>
+          <p className="text-xs mb-4" style={{ color: "var(--ink-faint)" }}>Top categories over the last {last3Months.length} months</p>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={categoryTrendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.3} />
-              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--hairline)" opacity={0.6} />
+              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "var(--ink-faint)", fontSize: 12 }} />
               <YAxis hide />
-              <Tooltip formatter={(v) => `₹${v.toLocaleString()}`} contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} />
+              <Tooltip formatter={(v) => `₹${v.toLocaleString()}`} contentStyle={tooltipStyle} labelStyle={{ color: "var(--paper)" }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               {top5Categories.map(cat => (
-                <Bar key={cat} dataKey={cat} fill={CATEGORY_COLORS[cat] || "#a3a3a3"} radius={[4, 4, 0, 0]} />
+                <Bar key={cat} dataKey={cat} fill={CATEGORY_COLORS[cat] || "#a3a3a3"} radius={[4, 4, 0, 0]} animationDuration={700} />
               ))}
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </motion.div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800">
-          <p className="font-semibold text-slate-900 dark:text-white mb-4">Spending Breakdown</p>
-          {pieData.length === 0 && <p className="text-sm text-slate-400 dark:text-slate-500">No expenses yet</p>}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="surface p-6">
+          <p className="font-semibold mb-4" style={{ color: "var(--ink)" }}>Spending Breakdown</p>
+          {pieData.length === 0 && <p className="text-sm" style={{ color: "var(--ink-faint)" }}>No expenses yet</p>}
           {pieData.map((entry, i) => {
             const Icon = CATEGORY_ICON_COMPONENTS[entry.name] || Package;
+            const pct = (entry.value / Math.abs(expenses)) * 100;
             return (
               <div key={i} className="mb-4">
                 <div className="flex justify-between mb-1.5 text-sm">
-                  <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                  <span className="flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}>
                     <Icon size={14} /> {entry.name}
                   </span>
-                  <span className="font-semibold text-slate-900 dark:text-white">
-                    ₹{entry.value.toLocaleString()} · {Math.round((entry.value / Math.abs(expenses)) * 100)}%
+                  <span className="font-semibold tabular" style={{ color: "var(--ink)" }}>
+                    ₹{entry.value.toLocaleString()} · {Math.round(pct)}%
                   </span>
                 </div>
-                <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full">
-                  <div
+                <div className="h-1.5 rounded-full" style={{ background: "var(--hairline)" }}>
+                  <motion.div
                     className="h-full rounded-full"
-                    style={{ width: `${(entry.value / Math.abs(expenses)) * 100}%`, background: CATEGORY_COLORS[entry.name] || "#a3a3a3" }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${pct}%` }}
+                    transition={{ duration: 0.6, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ background: CATEGORY_COLORS[entry.name] || "#a3a3a3" }}
                   />
                 </div>
               </div>
             );
           })}
-        </div>
+        </motion.div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 min-w-0">
-          <p className="font-semibold text-slate-900 dark:text-white mb-4">Spending by Day</p>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.06 }} className="surface p-6 min-w-0">
+          <p className="font-semibold mb-4" style={{ color: "var(--ink)" }}>Spending by Day</p>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={dayData}>
-              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
+              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "var(--ink-faint)", fontSize: 12 }} />
               <YAxis hide />
-              <Tooltip formatter={(v) => `₹${v.toLocaleString()}`} contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} />
-              <Bar dataKey="amount" radius={[6, 6, 0, 0]} barSize={28}>
-                {dayData.map((entry, i) => <Cell key={i} fill={entry.amount === maxDay && maxDay > 0 ? "#7c3aed" : "#ddd6fe"} />)}
+              <Tooltip formatter={(v) => `₹${v.toLocaleString()}`} contentStyle={tooltipStyle} labelStyle={{ color: "var(--paper)" }} />
+              <Bar dataKey="amount" radius={[6, 6, 0, 0]} barSize={28} animationDuration={700}>
+                {dayData.map((entry, i) => <Cell key={i} fill={entry.amount === maxDay && maxDay > 0 ? "#A97C2F" : "#E4D2A8"} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

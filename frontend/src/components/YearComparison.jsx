@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 function YearComparison({ transactions }) {
@@ -26,7 +27,7 @@ function YearComparison({ transactions }) {
     const isGood = invertGood ? value <= 0 : value >= 0;
     const Icon = value === 0 ? Minus : value > 0 ? TrendingUp : TrendingDown;
     return (
-      <span className={`inline-flex items-center gap-1 text-xs font-medium ${isGood ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+      <span className="inline-flex items-center gap-1 text-xs font-medium" style={{ color: isGood ? "var(--forest)" : "var(--rust)" }}>
         <Icon size={12} />
         {Math.abs(value)}%
       </span>
@@ -35,52 +36,47 @@ function YearComparison({ transactions }) {
 
   if (lastYearData.count === 0) {
     return (
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 mb-6">
-        <p className="font-semibold text-slate-900 dark:text-white mb-1">Year-over-Year Comparison</p>
-        <p className="text-sm text-slate-400 dark:text-slate-500">Not enough data from {lastYear} to compare yet.</p>
+      <div className="surface p-6 mb-6">
+        <p className="font-semibold mb-1" style={{ color: "var(--ink)" }}>Year-over-Year Comparison</p>
+        <p className="text-sm" style={{ color: "var(--ink-faint)" }}>Not enough data from {lastYear} to compare yet.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 mb-6">
-      <p className="font-semibold text-slate-900 dark:text-white mb-1">Year-over-Year Comparison</p>
-      <p className="text-xs text-slate-400 dark:text-slate-500 mb-5">{currentYear} vs {lastYear}</p>
+    <div className="surface p-6 mb-6">
+      <p className="font-semibold mb-1" style={{ color: "var(--ink)" }}>Year-over-Year Comparison</p>
+      <p className="text-xs mb-5" style={{ color: "var(--ink-faint)" }}>{currentYear} vs {lastYear}</p>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="border border-slate-100 dark:border-slate-800 rounded-xl p-4">
-          <div className="flex justify-between items-center mb-3">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Income</p>
-            <ChangeIndicator value={incomeChange} />
-          </div>
-          <div className="flex justify-between items-baseline">
-            <div>
-              <p className="text-xs text-slate-400 dark:text-slate-500">{lastYear}</p>
-              <p className="text-sm font-medium text-slate-600 dark:text-slate-300">₹{lastYearData.income.toLocaleString()}</p>
+        {[
+          { label: "Income", change: incomeChange, invert: false, prev: lastYearData.income, curr: thisYearData.income },
+          { label: "Expenses", change: expenseChange, invert: true, prev: lastYearData.expenses, curr: thisYearData.expenses },
+        ].map((row, i) => (
+          <motion.div
+            key={row.label}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08 }}
+            className="rounded-xl p-4"
+            style={{ border: "1px solid var(--hairline)" }}
+          >
+            <div className="flex justify-between items-center mb-3">
+              <p className="text-sm" style={{ color: "var(--ink-soft)" }}>{row.label}</p>
+              <ChangeIndicator value={row.change} invertGood={row.invert} />
             </div>
-            <div className="text-right">
-              <p className="text-xs text-slate-400 dark:text-slate-500">{currentYear}</p>
-              <p className="text-base font-bold text-slate-900 dark:text-white">₹{thisYearData.income.toLocaleString()}</p>
+            <div className="flex justify-between items-baseline">
+              <div>
+                <p className="text-xs" style={{ color: "var(--ink-faint)" }}>{lastYear}</p>
+                <p className="text-sm font-medium tabular" style={{ color: "var(--ink-soft)" }}>₹{row.prev.toLocaleString()}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs" style={{ color: "var(--ink-faint)" }}>{currentYear}</p>
+                <p className="text-base font-display font-semibold tabular" style={{ color: "var(--ink)" }}>₹{row.curr.toLocaleString()}</p>
+              </div>
             </div>
-          </div>
-        </div>
-
-        <div className="border border-slate-100 dark:border-slate-800 rounded-xl p-4">
-          <div className="flex justify-between items-center mb-3">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Expenses</p>
-            <ChangeIndicator value={expenseChange} invertGood />
-          </div>
-          <div className="flex justify-between items-baseline">
-            <div>
-              <p className="text-xs text-slate-400 dark:text-slate-500">{lastYear}</p>
-              <p className="text-sm font-medium text-slate-600 dark:text-slate-300">₹{lastYearData.expenses.toLocaleString()}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-slate-400 dark:text-slate-500">{currentYear}</p>
-              <p className="text-base font-bold text-slate-900 dark:text-white">₹{thisYearData.expenses.toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
+          </motion.div>
+        ))}
       </div>
     </div>
   );
